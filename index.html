@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拉霸抽獎系統</title>
+
+<style>
+body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: linear-gradient(180deg,#0f2027,#203a43,#2c5364);
+    color: #fff;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+
+#wrapper {
+    max-width: 420px;
+    margin: auto;
+}
+
+.slot {
+    font-size: 36px;
+    height: 60px;
+    line-height: 60px;
+    border-radius: 12px;
+    background: #00000066;
+    margin: 20px auto;
+    overflow: hidden;
+    position: relative;
+}
+
+.slot span {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+}
+
+button {
+    padding: 12px 26px;
+    font-size: 16px;
+    margin: 8px;
+    border-radius: 20px;
+    border: none;
+}
+
+#startBtn { background:#1abc9c; }
+#resetBtn { background:#e74c3c; color:#fff; }
+
+#result {
+    font-size: 22px;
+    margin: 16px 0;
+    min-height: 30px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+<div id="wrapper">
+
+<h2>🎰 周年慶優惠抽獎(測試版)</h2>
+
+<div class="slot">
+    <span id="slotText">請開始</span>
+</div>
+
+<button id="startBtn" onclick="startLottery()">試試好手氣</button>
+<button id="resetBtn" onclick="resetHistory()">重新開始抽獎</button>
+
+<div id="result"></div>
+<ul id="history"></ul>
+
+</div>
+
+<script>
+const prizes = [
+    { name:"🏆 結帳八折", weight:5 },
+    { name:"🥈 結帳八五折", weight:5 },
+    { name:"🥉 結帳九折", weight:10 },
+    { name:"🎁 結帳九五折", weight:10 },
+    { name:"🎁 小禮物(1)", weight:20 },
+    { name:"🎁 小禮物(2)", weight:50 }
+];
+
+let spinning = false;
+let historyData = [];
+
+function weightedRandom() {
+    const total = prizes.reduce((s,p)=>s+p.weight,0);
+    let r = Math.random() * total;
+    for (const p of prizes) {
+        if (r < p.weight) return p.name;
+        r -= p.weight;
+    }
+}
+
+async function startLottery() {
+    if (spinning) return;
+    spinning = true;
+
+    const btn = document.getElementById("startBtn");
+    btn.disabled = true;
+    document.getElementById("result").innerText = "";
+
+    const slot = document.getElementById("slotText");
+    const texts = prizes.map(p => p.name);
+    let index = 0;
+
+    // 🎰 快 → 慢 → 停
+    const speeds = [
+        ...Array(20).fill(80),
+        ...Array(10).fill(150),
+        ...Array(8).fill(250),
+        ...Array(5).fill(350)
+    ];
+
+    for (const speed of speeds) {
+        slot.innerText = texts[index % texts.length];
+        index++;
+        await new Promise(r => setTimeout(r, speed));
+    }
+
+    // 🎯 停止瞬間決定結果
+    const result = weightedRandom();
+    slot.innerText = result;
+    document.getElementById("result").innerText = "🎉 恭喜您此次消費抽中：" + result;
+
+    historyData.unshift(result);
+    if (historyData.length > 10) historyData.length = 10;
+    renderHistory();
+
+    // 🔒 鎖定 10 秒
+    let countdown = 10;
+    btn.innerText = `請稍候 ${countdown}s`;
+
+    const lockTimer = setInterval(() => {
+        countdown--;
+        btn.innerText = countdown > 0 ? `請稍候 ${countdown}s` : "開始";
+        if (countdown === 0) {
+            clearInterval(lockTimer);
+            btn.disabled = false;
+            spinning = false;
+        }
+    }, 1000);
+}
+
+function renderHistory() {
+    const ul = document.getElementById("history");
+    ul.innerHTML = "";
+    historyData.forEach((h,i)=>{
+        const li = document.createElement("li");
+        li.innerText = `${i+1}. ${h}`;
+        ul.appendChild(li);
+    });
+}
+
+function resetHistory() {
+    const pw = prompt("請輸入重置密碼");
+    if (pw === "8888") {
+        historyData = [];
+        renderHistory();
+        document.getElementById("result").innerText = "✅ 已清除";
+    } else if (pw !== null) {
+        alert("❌ 密碼錯誤");
+    }
+}
+</script>
+
+</body>
+</html>
