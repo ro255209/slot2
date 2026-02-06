@@ -82,12 +82,12 @@ ul {
 
 <script>
 const prizes = [
-    { name:"🏆 結帳八折", weight:5 },
-    { name:"🥈 結帳八五折", weight:5 },
-    { name:"🥉 結帳九折", weight:10 },
-    { name:"🎁 結帳九五折", weight:10 },
+    { name:"🏆 結帳八五折", weight:5 },
+    { name:"🥈 結帳九折", weight:10 },
+    { name:"🥉 結帳九五折", weight:15 },
     { name:"🎁 小禮物(1)", weight:20 },
-    { name:"🎁 小禮物(2)", weight:50 }
+    { name:"🎁 小禮物(2)", weight:20 },
+    { name:"🤭 銘謝惠顧", weight:30 }
 ];
 
 let spinning = false;
@@ -131,7 +131,7 @@ async function startLottery() {
     // 🎯 停止瞬間決定結果
     const result = weightedRandom();
     slot.innerText = result;
-    document.getElementById("result").innerText = "🎉 恭喜您此次消費抽中：" + result;
+    document.getElementById("result").innerText = "🎉 您此次消費抽中：" + result;
 
     historyData.unshift(result);
     if (historyData.length > 10) historyData.length = 10;
