@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>二周年抽獎系統</title>
+
+<style>
+body{
+font-family:"Microsoft JhengHei",sans-serif;
+background:linear-gradient(180deg,#0f2027,#203a43,#2c5364);
+color:#fff;text-align:center;padding:20px;
+}
+#wrapper{max-width:420px;margin:auto;}
+
+.slot{
+font-size:36px;height:60px;line-height:60px;
+background:#0006;border-radius:12px;margin:20px auto;
+}
+
+button{
+padding:12px 24px;margin:8px;border:none;border-radius:20px;
+}
+#startBtn{background:#1abc9c;}
+#resetBtn{background:#e74c3c;color:#fff;}
+
+#result{font-size:20px;margin-top:10px;}
+#desc{
+margin-top:10px;
+padding:10px;
+background:#ffffff22;
+border-radius:10px;
+font-size:15px;
+}
+
+.code{font-size:12px;color:#ffd;}
+ul{list-style:none;padding:0;font-size:14px;}
+</style>
+</head>
+
+<body>
+<div id="wrapper">
+
+<h2>🎰 媳婦店鋪二周年慶消費抽獎活動</h2>
+
+<div id="notice">
+<b>📢 活動說明</b><br>
+① 壹筆消費滿額￥10,000以上限抽一次<br>
+② 如抽中九折優待請手機拍照並加入官方LINE與小幫手領獎<br>
+③ 除現場獎可直接領取外，優惠券限下次消費使用
+</div>
+
+<div class="slot" id="slotText">請開始</div>
+
+<button id="startBtn" onclick="startLottery()">開始</button>
+<button id="resetBtn" onclick="resetHistory()">重置紀錄</button>
+
+<div id="result"></div>
+<div id="desc"></div>
+
+<ul id="history"></ul>
+
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTlbRKwTfWFgYvSzxG7Cv4pjbMGoGtxZcbjtJgyaoxlu-BSAvMhFzK_w-FfmxPOmXKRg/exec";
+
+// 🎁 獎項 + 說明
+const prizes=[
+{name:"🏆 九折優惠券壹張",weight:15,desc:"來店消費九折優惠券，憑截圖發送至官方賴領取，限收到後下次消費使用"},
+{name:"🥈 隨機禮盒壹盒",weight:15,desc:"隨機禮盒壹盒，請向現場工作人員詢問領取"},
+{name:"🥉 隨機糖果壹包",weight:20,desc:"隨機糖果壹包，請向現場工作人員詢問領取"},
+{name:"🎁 衛生紙仙貝壹包",weight:25,desc:"衛生紙仙貝壹包,請向現場工作人員詢問領取"},
+{name:"🎁 精選小禮物壹份",weight:25,desc:"精選小禮物壹份,請向現場工作人員詢問領取"},
+];
+
+let historyData=[];
+let spinning=false;
+
+function weightedRandom(){
+const total=prizes.reduce((s,p)=>s+p.weight,0);
+let r=Math.random()*total;
+for(const p of prizes){
+if(r<p.weight)return p;
+r-=p.weight;
+}
+}
+
+function generateCode(){
+const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+let code="202603";
+for(let i=0;i<12;i++){
+code+=chars[Math.floor(Math.random()*chars.length)];
+}
+return code;
+}
+
+async function startLottery(){
+if(spinning)return;
+spinning=true;
+
+const btn=document.getElementById("startBtn");
+btn.disabled=true;
+
+document.getElementById("result").innerText="";
+document.getElementById("desc").innerText="";
+
+const slot=document.getElementById("slotText");
+const texts=prizes.map(p=>p.name);
+let index=0;
+
+const speeds=[...Array(20).fill(80),
+...Array(10).fill(150),
+...Array(8).fill(250),
+...Array(5).fill(350)];
+
+for(const s of speeds){
+slot.innerText=texts[index%texts.length];
+index++;
+await new Promise(r=>setTimeout(r,s));
+}
+
+const prize=weightedRandom();
+const code=generateCode();
+
+slot.innerText=prize.name;
+
+document.getElementById("result").innerHTML=
+`🎉 抽中：${prize.name}<br><span class="code">驗證碼：${code}</span>`;
+
+document.getElementById("desc").innerHTML=
+`🎁 獎項說明：<br>${prize.desc}`;
+
+historyData.unshift(`${prize.name} ｜ ${code}`);
+if(historyData.length>10)historyData.length=10;
+renderHistory();
+
+// 🔒 10秒鎖定
+let cd=10;
+btn.innerText=`請稍候 ${cd}s`;
+const t=setInterval(()=>{
+cd--;
+btn.innerText=cd>0?`請稍候 ${cd}s`:"開始";
+if(cd==0){
+clearInterval(t);
+btn.disabled=false;
+spinning=false;
+}
+},1000);
+}
+
+function sendToSheet(prize,code){
+fetch(SCRIPT_URL,{
+method:"POST",
+mode:"no-cors",
+body:JSON.stringify({
+prize:prize.name,
+desc:prize.desc,
+code:code,
+device:navigator.userAgent
+})
+});
+}
+
+function renderHistory(){
+const ul=document.getElementById("history");
+ul.innerHTML="";
+historyData.forEach((h,i)=>{
+const li=document.createElement("li");
+li.innerText=`${i+1}. ${h}`;
+ul.appendChild(li);
+});
+}
+
+function resetHistory(){
+const pw=prompt("請輸入重置密碼");
+if(pw==="1234"){
+historyData=[];
+renderHistory();
+document.getElementById("result").innerText="✅ 已清除";
+document.getElementById("desc").innerText="";
+}else if(pw!==null){
+alert("❌ 密碼錯誤");
+}
+}
+
+window.onbeforeunload = function(e) {
+  // 現代瀏覽器通常會忽略此處的自定義文字，僅顯示默認提示
+  var message = "此操作將喪失抽獎權益，確定要離開嗎？";
+  e = e || window.event;
+  if (e) {
+    e.returnValue = message; // 兼容舊版
+  }
+  return message;
+};
+</script>
+</body>
+</html>
