@@ -190,7 +190,7 @@ function sendToSheet(prize, code) {
 
 function renderHistory() {
     const ul = document.getElementById("history");
-    ul.innerHTML = "<b>🕒 最近 10 筆抽獎紀錄：</b>";
+    ul.innerHTML = "<b>🕒 本設備最近 10 筆抽獎紀錄：</b>";
     historyData.forEach((h, i) => {
         const li = document.createElement("li");
         li.style.borderBottom = "1px dotted #555";
@@ -227,6 +227,7 @@ window.onbeforeunload = function(e) {
 </body>
 
 </html>
+
 
 
 
