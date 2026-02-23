@@ -138,7 +138,7 @@ async function startLottery() {
     slot.innerText = prize.name;
 
     document.getElementById("result").innerHTML =
-        `🎉 抽中：${prize.name}<br><span class="code">驗證碼：${code}</span>`;
+        `🎉 恭喜您抽中：${prize.name}<br><span class="code">驗證碼：${code}</span>`;
 
     document.getElementById("desc").innerHTML =
         `🎁 獎項說明：<br>${prize.desc}`;
@@ -227,6 +227,7 @@ window.onbeforeunload = function(e) {
 </body>
 
 </html>
+
 
 
 
