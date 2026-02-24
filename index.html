@@ -65,7 +65,7 @@ ul{list-style:none;padding:0;font-size:14px;}
 <footer id="footer">
     <div class="divider"></div>
     <p>© 2024-2026 媳婦店鋪 ‧ 版權所有</p>
-    <p class="signature">V1.03_Designed by <span class="author">月半</span></p>
+    <p class="signature">V1.04_Designed by <span class="author">月半</span></p>
 </footer>
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzvulhuvxfZ-a1ymUhS5WPmWYLy0kyxgY1Sc0vmK1uif97a2MQSQv1jFs5x0KtGvwcE/exec";
@@ -101,12 +101,28 @@ function weightedRandom() {
 }
 
 function generateCode() {
+    const now = new Date();
+    
+    // 取得年份後兩位 (YY)
+    const year = now.getFullYear().toString().slice(-2);
+    
+    // 取得月份 (MM)，注意月份是從 0 開始，所以要 +1，並補齊兩位
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    
+    // 取得日期 (DD)，補齊兩位
+    const day = now.getDate().toString().padStart(2, '0');
+    
+    // 組合年月日
+    const dateStr = year + month + day;
+    
+    // 生成隨機亂碼部分
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let code = "202603";
-    for (let i = 0; i < 12; i++) {
-        code += chars[Math.floor(Math.random() * chars.length)];
+    let randomPart = "";
+    for (let i = 0; i < 12; i++) { // 這邊設為 12 位，加上日期 6 位共 18 位
+        randomPart += chars[Math.floor(Math.random() * chars.length)];
     }
-    return code;
+    
+    return dateStr + randomPart;
 }
 
 async function startLottery() {
@@ -227,6 +243,7 @@ window.onbeforeunload = function(e) {
 </body>
 
 </html>
+
 
 
 
