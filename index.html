@@ -44,6 +44,20 @@
         .divider { width: 30px; height: 1px; background: #1abc9c; margin: 15px auto; opacity: 0.5; }
         .uid-tag { font-family: monospace; letter-spacing: 1px; margin-top: 5px; color: rgba(255,255,255,0.3); }
         .author { color: #ffd; font-weight: bold; }
+
+        /* 自訂密碼視窗樣式 */
+        #pwdModal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #2c3e50; padding: 25px; border-radius: 15px; width: 280px; 
+            border: 1px solid #1abc9c; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .modal-input {
+            width: 100%; padding: 12px; border-radius: 8px; border: none; 
+            margin: 15px 0; box-sizing: border-box; font-size: 18px; text-align: center;
+        }
     </style>
 </head>
 
@@ -53,10 +67,10 @@
     
     <div id="notice" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; font-size: 14px; text-align: left; border-left: 4px solid #1abc9c;">
         <b>📢 活動說明</b><br>
-① 壹筆消費滿額￥10,000以上限抽一次<br>
-② 如抽中九折優待，請手機拍照中獎畫面並加入官方LINE與小幫手領獎<br>
-③ 除現場獎可直接領取外，優惠券限隔日後下次消費使用<br>
-⚠️確保顧客權益，本抽獎系統前後端皆會同步紀錄抽獎資料<br>
+        ① 壹筆消費滿額￥10,000以上限抽一次<br>
+        ② 如抽中九折優待，請手機拍照中獎畫面並加入官方LINE與小幫手領獎<br>
+        ③ 除現場獎可直接領取外，優惠券限隔日後下次消費使用<br>
+        ⚠️確保顧客權益，本抽獎系統前後端皆會同步紀錄抽獎資料<br>
     </div>
 
     <div class="slot" id="slotText">LOCKED</div>
@@ -71,19 +85,28 @@
     <button id="resetBtn" onclick="resetHistory()">清除紀錄 (需管理密碼)</button>
 </div>
 
+<div id="pwdModal">
+    <div class="modal-content">
+        <h3 style="margin:0; color:#1abc9c;">啟動驗證</h3>
+        <p style="font-size:14px; color:#bdc3c7; margin-top:10px;">請輸入今日啟動碼</p>
+        <input type="password" id="pwdInput" class="modal-input" placeholder="請輸入密碼">
+        <button onclick="checkPwd()" style="background:#1abc9c; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; width:100%; font-weight:bold;">驗證解鎖</button>
+        <button onclick="closeModal()" style="background:transparent; color:#95a5a6; border:none; margin-top:10px; cursor:pointer; font-size:12px;">取消</button>
+    </div>
+</div>
+
 <footer id="footer">
     <div class="divider"></div>
     <p>© 2024-2026 媳婦店鋪 ‧ 版權所有</p>
     <div class="uid-tag" id="footerUid">Device ID: Loading...</div>
-    <p class="signature">Designed by <span class="author">月半_V1.05 </span></p>
+    <p class="signature">Designed by <span class="author">月半_V1.06</span></p>
 </footer>
 
 <script>
 /** * 🔧 設定區 
  */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHoxv1P3yIVjZ9yosVIBKzxNkvNCds4_5sWGGuupxllux9AHiyHbLgApR3-qbiHTsZ9Q/exec"; // 記得填入
-const UNLOCK_PASSWORD = "777";         // 重新整理後的啟動密碼
-const ADMIN_PASSWORD = "1688";          // 清除歷史紀錄的密碼
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHoxv1P3yIVjZ9yosVIBKzxNkvNCds4_5sWGGuupxllux9AHiyHbLgApR3-qbiHTsZ9Q/exec"; 
+const ADMIN_PASSWORD = "1688"; // 清除紀錄的固定管理密碼
 
 const prizes = [
     { name: "👜 花園鰻帆布袋壹個", weight: 1, desc: "店鋪限定-花園鰻帆布袋壹個，請向現場工作人員領取。" },
@@ -94,23 +117,65 @@ const prizes = [
     { name: "🎁 限定小禮物壹份", weight: 25, desc: "精選小禮物壹份，請向現場工作人員領取。" },
 ];
 
-/** * 核心邏輯 
- */
 let isUnlocked = false; 
 let historyData = [];
 let spinning = false;
 
 window.onload = function() {
-    // 1. 恢復紀錄
     const saved = localStorage.getItem("lottery_history");
     if (saved) {
         historyData = JSON.parse(saved);
         renderHistory();
     }
-    // 2. 顯示 Device ID
     document.getElementById("footerUid").innerText = "Device ID: " + getDeviceUID();
 };
 
+/** * 🔐 密碼與驗證邏輯
+ */
+function getDynamicPassword() {
+    const now = new Date();
+    const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+    const dd = now.getDate().toString().padStart(2, '0');
+    return mm + dd + "777"; // 產出 MMDD777
+}
+
+function handleButtonClick() {
+    if (!isUnlocked) {
+        document.getElementById("pwdModal").style.display = "flex";
+        document.getElementById("pwdInput").value = "";
+        document.getElementById("pwdInput").focus();
+        return;
+    }
+    startLottery();
+}
+
+function closeModal() {
+    document.getElementById("pwdModal").style.display = "none";
+}
+
+function checkPwd() {
+    const input = document.getElementById("pwdInput").value;
+    if (input === getDynamicPassword()) {
+        isUnlocked = true;
+        const btn = document.getElementById("startBtn");
+        btn.innerText = "開始抽獎";
+        btn.classList.add("unlocked");
+        document.getElementById("slotText").innerText = "READY";
+        closeModal();
+        alert("今日啟動成功！");
+    } else {
+        alert("密碼錯誤，請核對今日日期密碼。");
+        document.getElementById("pwdInput").value = "";
+    }
+}
+
+// 監聽 Enter 鍵提交密碼
+document.getElementById("pwdInput").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") checkPwd();
+});
+
+/** * 🎰 抽獎核心邏輯
+ */
 function getDeviceUID() {
     let uid = localStorage.getItem("device_uid");
     if (!uid) {
@@ -123,31 +188,11 @@ function getDeviceUID() {
     return uid;
 }
 
-// 處理按鈕點擊 (判斷是解鎖還是抽獎)
-function handleButtonClick() {
-    if (!isUnlocked) {
-        const pw = prompt("請輸入啟動密碼以開始抽獎活動：");
-        if (pw === UNLOCK_PASSWORD) {
-            isUnlocked = true;
-            const btn = document.getElementById("startBtn");
-            btn.innerText = "開始抽獎";
-            btn.classList.add("unlocked");
-            document.getElementById("slotText").innerText = "READY";
-            alert("系統已啟動，請開始抽獎。");
-        } else if (pw !== null) {
-            alert("密碼錯誤！");
-        }
-        return;
-    }
-    startLottery();
-}
-
 function generateCode() {
     const now = new Date();
     const dateStr = now.getFullYear().toString().slice(-2) + 
                     (now.getMonth() + 1).toString().padStart(2, '0') + 
                     now.getDate().toString().padStart(2, '0');
-    
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let randomPart = "";
     for (let i = 0; i < 12; i++) randomPart += chars[Math.floor(Math.random() * chars.length)];
@@ -175,7 +220,6 @@ async function startLottery() {
     const slot = document.getElementById("slotText");
     const texts = prizes.map(p => p.name);
     
-    // 模擬抽獎動畫
     for (let i = 0; i < 30; i++) {
         slot.innerText = texts[i % texts.length];
         await new Promise(r => setTimeout(r, 40 + (i * 10))); 
@@ -189,7 +233,6 @@ async function startLottery() {
     document.getElementById("result").innerHTML = `🎉恭喜您抽中 - ${prize.name}<br><span class="code-tag">驗證碼：${code}</span>`;
     document.getElementById("desc").innerHTML = `<b>獎項說明：</b><br>${prize.desc}`;
 
-    // 紀錄與傳送
     const record = { name: prize.name, code: code, time: now };
     historyData.unshift(record);
     if (historyData.length > 10) historyData.length = 10;
@@ -197,7 +240,6 @@ async function startLottery() {
     renderHistory();
     sendToSheet(prize, code);
 
-    // 冷卻時間
     let cd = 10;
     const t = setInterval(() => {
         cd--;
@@ -215,7 +257,7 @@ function sendToSheet(prize, code) {
             prize: prize.name,
             desc: prize.desc,
             code: code,
-	    uid: uid,
+            uid: uid,
             device: navigator.userAgent
         })
     }).catch(e => console.log("Cloud Save Skip"));
@@ -232,35 +274,20 @@ function renderHistory() {
 }
 
 function resetHistory() {
-    if (prompt("請輸入管理密碼以清除所有歷史紀錄：") === ADMIN_PASSWORD) {
+    if (prompt("請輸入管理密碼：") === ADMIN_PASSWORD) {
         localStorage.removeItem("lottery_history");
         historyData = [];
         renderHistory();
-        alert("歷史紀錄已成功清除！");
-    } else {
-        alert("密碼錯誤，操作取消。");
+        alert("紀錄已清除！");
     }
 }
-// 防止誤觸關閉
+
 window.onbeforeunload = function(e) {
-  // 現代瀏覽器通常會忽略此處的自定義文字，僅顯示默認提示
-  var message = "此操作將喪失抽獎權益，確定要離開嗎？";
-  e = e || window.event;
-  if (e) {
-    e.returnValue = message; // 兼容舊版
-  }
-  return message;
+    var message = "此操作將喪失抽獎權益，確定要離開嗎？";
+    e = e || window.event;
+    if (e) e.returnValue = message;
+    return message;
 };
 </script>
 </body>
-
 </html>
-
-
-
-
-
-
-
-
-
