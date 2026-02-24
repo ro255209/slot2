@@ -201,7 +201,7 @@ async function startLottery() {
     let cd = 10;
     const t = setInterval(() => {
         cd--;
-        btn.innerText = cd > 0 ? `請稍候 ${cd}s` : "再次抽獎";
+        btn.innerText = cd > 0 ? `請稍候 ${cd}s` : "開始抽獎";
         if (cd <= 0) { clearInterval(t); btn.disabled = false; spinning = false; }
     }, 1000);
 }
@@ -255,4 +255,5 @@ window.onbeforeunload = function(e) {
 </body>
 
 </html>
+
 
