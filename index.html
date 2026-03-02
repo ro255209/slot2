@@ -73,9 +73,9 @@
         ⚠️確保顧客權益，本抽獎系統前後端皆會同步紀錄抽獎資料<br>
     </div>
 
-    <div class="slot" id="slotText">鎖定中，請先解鎖</div>
+    <div class="slot" id="slotText">請先解鎖(LOCKED)</div>
 
-    <button id="startBtn" onclick="handleButtonClick()">點擊輸入密碼解鎖</button>
+    <button id="startBtn" onclick="handleButtonClick()">點擊輸入密碼解鎖(暗証番号)</button>
 
     <div id="result"></div>
     <div id="desc"></div>
@@ -88,9 +88,9 @@
 <div id="pwdModal">
     <div class="modal-content">
         <h3 style="margin:0; color:#1abc9c;">啟動驗證</h3>
-        <p style="font-size:14px; color:#bdc3c7; margin-top:10px;">請輸入今日啟動碼</p>
-        <input type="password" id="pwdInput" class="modal-input" placeholder="請輸入密碼">
-        <button onclick="checkPwd()" style="background:#1abc9c; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; width:100%; font-weight:bold;">驗證解鎖</button>
+        <p style="font-size:14px; color:#bdc3c7; margin-top:10px;">請輸入今日啟動碼(暗証番号入力)</p>
+        <input type="password" id="pwdInput" class="modal-input" placeholder="請輸入密碼(を入力してください)">
+        <button onclick="checkPwd()" style="background:#1abc9c; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; width:100%; font-weight:bold;">驗證解鎖Check</button>
         <button onclick="closeModal()" style="background:transparent; color:#95a5a6; border:none; margin-top:10px; cursor:pointer; font-size:12px;">取消</button>
     </div>
 </div>
@@ -99,7 +99,7 @@
     <div class="divider"></div>
     <p>© 2024-2026 媳婦店鋪 ‧ 版權所有</p>
     <div class="uid-tag" id="footerUid">Device ID: Loading...</div>
-    <p class="signature">Designed by <span class="author">月半_V1.06</span></p>
+    <p class="signature">Designed by <span class="author">月半_V1.07</span></p>
 </footer>
 
 <script>
@@ -109,13 +109,13 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHoxv1P3yIVjZ9yosVI
 const ADMIN_PASSWORD = "1688"; // 清除紀錄的固定管理密碼
 
 const prizes = [
-    { name: "👜 花園鰻帆布袋壹個", weight: 1, desc: "店鋪限定-花園鰻帆布袋壹個，請向現場工作人員領取。" },
-    { name: "🧧 九折優惠券壹張", weight: 10, desc: "來店消費九折優惠券，請拍照此畫面聯繫官方LINE小幫手，⚠️當天晚上派發，⚠️限隔日後下次消費使用。" },
-    { name: "🚘日之初租車優惠券壹張", weight: 10, desc: "日之初租車優惠券，請拍照此畫面聯繫官方LINE小幫手，⚠️當天晚上派發。" },
-    { name: "🍱 精選禮盒壹盒", weight: 14, desc: "隨機禮盒壹盒，請向現場工作人員領取。" },
-    { name: "🍬 特選糖果壹包", weight: 20, desc: "隨機糖果壹包，請向現場工作人員領取。" },
-    { name: "🥒 苦瓜脆片壹包", weight: 20, desc: "苦瓜脆片壹包(口味隨機)，請向現場工作人員領取。" },
-    { name: "🎁 限定小禮物壹份", weight: 25, desc: "精選小禮物壹份，請向現場工作人員領取。" },
+    { name: "👜花園鰻帆布袋壹個(Shinboo 限定バッグ)", weight: 1, desc: "店鋪限定-花園鰻帆布袋壹個，請向現場工作人員領取。" },
+    { name: "🧧九折優惠券壹張(10% 割引券)", weight: 10, desc: "來店消費九折優惠券，請拍照此畫面聯繫官方LINE小幫手，⚠️當天晚上派發，⚠️限隔日後下次消費使用。" },
+    { name: "🚘日之初租車優惠券壹張(レンタカー 割引券)", weight: 10, desc: "日之初租車優惠券，請拍照此畫面聯繫官方LINE小幫手，⚠️當天晚上派發。" },
+    { name: "🍱 精選禮盒壹盒(お土産ギフト)", weight: 14, desc: "隨機禮盒壹盒，請向現場工作人員領取。" },
+    { name: "🍬 特選糖果壹包(あめ/キャンディ)", weight: 20, desc: "隨機糖果壹包，請向現場工作人員領取。" },
+    { name: "🥒 苦瓜脆片壹包(ゴーヤチップス)", weight: 20, desc: "苦瓜脆片壹包(口味隨機)，請向現場工作人員領取。" },
+    { name: "🎁 限定小禮物壹份(プレゼント)", weight: 25, desc: "精選小禮物壹份，請向現場工作人員領取。" },
 ];
 
 let isUnlocked = false; 
@@ -159,13 +159,13 @@ function checkPwd() {
     if (input === getDynamicPassword()) {
         isUnlocked = true;
         const btn = document.getElementById("startBtn");
-        btn.innerText = "開始抽獎";
+        btn.innerText = "開始抽獎(抽選)";
         btn.classList.add("unlocked");
         document.getElementById("slotText").innerText = "READY";
         closeModal();
-        alert("今日啟動成功！");
+        alert("今日啟動成功Success！");
     } else {
-        alert("密碼錯誤，請核對今日日期密碼。");
+        alert("密碼錯誤，請核對今日日期密碼。failed");
         document.getElementById("pwdInput").value = "";
     }
 }
@@ -292,6 +292,5 @@ window.onbeforeunload = function(e) {
 </script>
 </body>
 </html>
-
 
 
