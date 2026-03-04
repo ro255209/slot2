@@ -204,9 +204,9 @@ function checkPwd() {
         btn.classList.add("unlocked");
         document.getElementById("slotText").innerText = "READY";
         closeModal();
-        alert("今日啟動成功Success！");
+        alert("啟動成功Success！");
     } else {
-        alert("密碼錯誤，請核對今日日期密碼。failed");
+        alert("密碼錯誤，請重新核對密碼。failed");
         document.getElementById("pwdInput").value = "";
     }
 }
@@ -336,6 +336,7 @@ window.onbeforeunload = function(e) {
 </script>
 </body>
 </html>
+
 
 
 
