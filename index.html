@@ -100,7 +100,7 @@
         ① 壹筆消費滿額￥10,000以上限抽一次<br>
         ② 如抽中九折優待 或 租車折扣券，請手機拍照中獎畫面並加入官方LINE與小幫手領獎<br>
         ③ 除現場獎可直接領取外，優惠券限隔日後下次消費使用<br>
-        ↓本畫面最下方可直接掃描QR碼加入官方LINE<br>
+        ⬇️本畫面最下方可直接掃描QR碼加入官方LINE<br>
         ⚠️確保顧客權益，本抽獎系統前後端皆會同步紀錄抽獎資料<br>
     </div>
 
@@ -112,7 +112,7 @@
     <div id="desc"></div>
 
     <details id="historyDetails">
-        <summary>🕒 查看最近 10 筆紀錄</summary>
+        <summary>🕒 本設備近 10 筆抽選紀錄(記録シート)</summary>
         <ul id="history">
             <li style="border:none; color:#aaa; text-align:center;">尚無紀錄</li>
         </ul>
@@ -133,13 +133,13 @@
 
 <footer id="footer">
     <div class="qr-container">
-        <img src="https://qr-official.line.me/gs/M_875dbsye_GW.png" width="100" height="100" alt="LINE QR Code">
+        <img src="https://qr-official.line.me/gs/M_875dbsye_GW.png" width="150" height="150" alt="LINE QR Code">
         <div class="qr-text">📸 優待券請拍照後掃碼領獎</div>
     </div>
     <div class="divider"></div>
     <p>© 2024-2026 媳婦店鋪 ‧ 版權所有</p>
     <div class="uid-tag" id="footerUid">Device ID: Loading...</div>
-    <p class="signature">Designed by <span class="author">月半_V1.08</span></p>
+    <p class="signature">Designed by <span class="author">月半_V1.09</span></p>
 </footer>
 
 <script>
@@ -150,8 +150,8 @@ const ADMIN_PASSWORD = "1688";
 
 const prizes = [
     { name: "👜花園鰻帆布袋壹個", weight: 1, desc: "店鋪限定-花園鰻帆布袋壹個，請向現場工作人員領取。(Shinboo 限定バッグ)" },
-    { name: "🧧九折優惠券壹張", weight: 10, desc: "來店消費九折優惠券，請拍照此畫面聯繫官方LINE小幫手，⚠️當天晚上派發，⚠️限隔日後下次消費使用。(10% 割引券)" },
-    { name: "🚘日之初租車優惠券壹張", weight: 10, desc: "日之初租車優惠券，請拍照此畫面聯繫官方LINE小幫手，⚠️當天晚上派發。(レンタカー 割引券)" },
+    { name: "🧧九折優惠券壹張", weight: 10, desc: "來店消費九折優惠券，請拍照此畫面傳送官方LINE小幫手，⚠️當天晚上派發，⚠️限隔日後下次消費使用。(10% 割引券)" },
+    { name: "🚘日之初租車優惠券壹張", weight: 10, desc: "日之初租車優惠券，請拍照此畫面傳送官方LINE小幫手，⚠️當天晚上派發。(レンタカー 割引券)" },
     { name: "🍱 精選禮盒壹盒", weight: 14, desc: "隨機禮盒壹盒，請向現場工作人員領取。(お土産ギフト)" },
     { name: "🍬 特選糖果壹包", weight: 20, desc: "隨機糖果壹包，請向現場工作人員領取。(あめ/キャンディ)" },
     { name: "🥒 苦瓜脆片壹包", weight: 20, desc: "苦瓜脆片壹包(口味隨機)，請向現場工作人員領取。(ゴーヤチップス)" },
@@ -335,3 +335,4 @@ window.onbeforeunload = function(e) {
 </script>
 </body>
 </html>
+
