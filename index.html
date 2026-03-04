@@ -97,10 +97,10 @@
     
     <div id="notice" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; font-size: 10px; text-align: left; border-left: 4px solid #1abc9c;">
         <b>📢 活動說明</b><br>
-        ① 壹筆消費滿額￥10,000以上限抽一次<br>
+        ① 壹筆消費滿額￥10,000以上限抽一次(￥10,000円以上のお買い上げで1回の抽選に限ります。)<br>
         ② 如抽中九折優待 或 租車折扣券，請手機拍照中獎畫面並加入官方LINE與小幫手領獎<br>
         ③ 除現場獎可直接領取外，優惠券限隔日後下次消費使用<br>
-        ⬇️本畫面最下方可直接掃描QR碼加入官方LINE<br>
+        ⬇️本畫面最下方可直接掃描QR碼加入官方LINE(ラインQRコードはページの下部にあります。)<br>
         ⚠️確保顧客權益，本抽獎系統前後端皆會同步紀錄抽獎資料<br>
     </div>
 
@@ -139,7 +139,7 @@
     <div class="divider"></div>
     <p>© 2024-2026 媳婦店鋪 ‧ 版權所有</p>
     <div class="uid-tag" id="footerUid">Device ID: Loading...</div>
-    <p class="signature">Designed by <span class="author">月半_V1.09</span></p>
+    <p class="signature">Designed by <span class="author">月半_V1.10_260304</span></p>
 </footer>
 
 <script>
@@ -150,12 +150,13 @@ const ADMIN_PASSWORD = "1688";
 
 const prizes = [
     { name: "👜花園鰻帆布袋壹個", weight: 1, desc: "店鋪限定-花園鰻帆布袋壹個，請向現場工作人員領取。(Shinboo 限定バッグ)" },
-    { name: "🧧九折優惠券壹張", weight: 10, desc: "來店消費九折優惠券，請拍照此畫面傳送官方LINE小幫手，⚠️當天晚上派發，⚠️限隔日後下次消費使用。(10% 割引券)" },
-    { name: "🚘日之初租車優惠券壹張", weight: 10, desc: "日之初租車優惠券，請拍照此畫面傳送官方LINE小幫手，⚠️當天晚上派發。(レンタカー 割引券)" },
-    { name: "🍱 精選禮盒壹盒", weight: 14, desc: "隨機禮盒壹盒，請向現場工作人員領取。(お土産ギフト)" },
-    { name: "🍬 特選糖果壹包", weight: 20, desc: "隨機糖果壹包，請向現場工作人員領取。(あめ/キャンディ)" },
-    { name: "🥒 苦瓜脆片壹包", weight: 20, desc: "苦瓜脆片壹包(口味隨機)，請向現場工作人員領取。(ゴーヤチップス)" },
-    { name: "🎁 限定小禮物壹份", weight: 25, desc: "精選小禮物壹份，請向現場工作人員領取。(ちっちゃいやつ)" },
+    { name: "🧧九折優惠券壹張", weight: 6, desc: "來店消費九折優惠券，請拍照此畫面傳送官方LINE小幫手，⚠️當天晚上派發，⚠️限隔日後下次消費使用。(10% 割引券)" },
+    { name: "🚘日之初租車優惠券壹張", weight: 6, desc: "日之初租車優惠券，請拍照此畫面傳送官方LINE小幫手，⚠️當天晚上派發。(レンタカー 割引券)" },
+    { name: "🍱 精選禮盒壹盒", weight: 10, desc: "隨機禮盒壹盒，請向現場工作人員領取。(お土産ギフト)" },
+    { name: "⚓ 精選紀念小物", weight: 15, desc: "隨機紀念小物壹個，請向現場工作人員領取。(スーベニア/きねんひん)" },
+    { name: "🍬 特選糖果壹包", weight: 15, desc: "隨機糖果壹包，請向現場工作人員領取。(あめ/キャンディ)" },
+    { name: "🥒 苦瓜脆片壹包", weight: 17, desc: "苦瓜脆片壹包(口味隨機)，請向現場工作人員領取。(ゴーヤチップス)" },
+    { name: "🎁 限定小禮物壹份", weight: 30, desc: "精選小禮物壹份，請向現場工作人員領取。(ちっちゃいやつ)" },
 ];
 
 let isUnlocked = false; 
@@ -335,6 +336,7 @@ window.onbeforeunload = function(e) {
 </script>
 </body>
 </html>
+
 
 
 
