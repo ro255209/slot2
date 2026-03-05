@@ -289,7 +289,7 @@ async function startLottery() {
     const now = new Date().toLocaleString();
 
     slot.innerText = prize.name;
-    document.getElementById("result").innerHTML = `🎉恭喜您抽中 - ${prize.name}<br><span class="code-tag">驗證碼：${code}</span>`;
+    document.getElementById("result").innerHTML = `🎉恭喜您抽中 - ${prize.name}<br><span class="code-tag">兌換碼：${code}</span>`;
     document.getElementById("desc").innerHTML = `<b>獎項說明：</b>${prize.desc}`;
 
     const record = { name: prize.name, code: code, time: now };
@@ -354,6 +354,7 @@ window.onbeforeunload = function(e) {
 </script>
 </body>
 </html>
+
 
 
 
