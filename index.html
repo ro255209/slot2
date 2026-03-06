@@ -265,10 +265,7 @@ async function startLottery() {
     if (spinning || !isUnlocked) return;
     spinning = true;
 
-    // 音效預熱
-    [SPIN_SOUND, WIN_SOUND, NORMAL_SOUND].forEach(s => {
-        s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
-    });
+    WIN_SOUND.play().then(()=>WIN_SOUND.pause()).catch(()=>{});
 
     const btn = document.getElementById("startBtn");
     btn.disabled = true;
@@ -278,31 +275,12 @@ async function startLottery() {
     const slot = document.getElementById("slotText");
     const texts = prizes.map(p => p.name);
     
-    // 啟動 Slot 音效
-    SPIN_SOUND.loop = true;
-    SPIN_SOUND.play();
-
-    // 抽獎動畫
     const totalFrames = 40;
     for (let i = 0; i < totalFrames; i++) {
         slot.innerText = texts[Math.floor(secureRandom() * texts.length)];
         const delay = 40 + Math.pow(i / 5, 2.5);
         await new Promise(r => setTimeout(r, delay)); 
     }
-
-    // 停止 Slot 音效
-    SPIN_SOUND.pause();
-    SPIN_SOUND.currentTime = 0;
-
-    // --- 【防三連重複機制】 ---
-    let prize = getSecureWeightedPrize();
-    if (historyData.length >= 2) {
-        let retry = 0;
-        // 如果現在抽中的跟前兩次都一模一樣，就重撥，直到不一樣為止
-        while (prize.name === historyData[0].name && historyData[0].name === historyData[1].name && retry < 5) {
-            prize = getSecureWeightedPrize();
-            retry++;
-        }
     const prize = getSecureWeightedPrize();
     const code = generateCode();
     slot.innerText = prize.name;
@@ -417,6 +395,7 @@ function closeWinModal() {
 </body>
 
 </html>
+
 
 
 
