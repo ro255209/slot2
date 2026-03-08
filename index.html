@@ -150,7 +150,7 @@
     <div class="divider"></div>
     <p>© 2024-2026 媳婦店鋪 ‧ 版權所有</p>
     <div class="uid-tag" id="footerUid">Device ID: Loading...</div>
-    <p class="signature">Designed by <span style="color:#ffd; font-weight:bold;">月半_V1.13_030609</span></p>
+    <p class="signature">Designed by <span style="color:#ffd; font-weight:bold;">月半_V1.13_030901</span></p>
 </footer>
 
 <script>
@@ -281,7 +281,19 @@ async function startLottery() {
         const delay = 40 + Math.pow(i / 5, 2.5);
         await new Promise(r => setTimeout(r, delay)); 
     }
-    const prize = getSecureWeightedPrize();
+
+    // --- [防三連重複邏輯：僅針對即將發生三連抽時重抽一次] ---
+    let prize = getSecureWeightedPrize();
+    
+    // 檢查是否有前兩次紀錄，且前兩次獎項相同
+    if (historyData.length >= 2 && historyData[0].name === historyData[1].name) {
+        // 如果這一抽又跟前兩次一樣，則重抽一次（僅限重抽一次，確保不破壞權重太多）
+        if (prize.name === historyData[0].name) {
+            prize = getSecureWeightedPrize();
+        }
+    }
+    // ----------------------------------------------------
+
     const code = generateCode();
     slot.innerText = prize.name;
     document.getElementById("result").innerHTML = `🎉恭喜中獎 - ${prize.name}<br><span class="code-tag">兌換碼：${code}</span>`;
@@ -395,6 +407,7 @@ function closeWinModal() {
 </body>
 
 </html>
+
 
 
 
