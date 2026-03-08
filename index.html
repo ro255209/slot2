@@ -284,8 +284,9 @@ async function startLottery() {
 
    
     let prize = getSecureWeightedPrize();
-       if (historyData.length >= 3 && historyData[0].name === historyData[1].name) {
-        
+       if (historyData.length >= 3 && 
+    historyData[0].name === historyData[1].name && 
+    historyData[1].name === historyData[2].name) {
         if (prize.name === historyData[0].name) {
             prize = getSecureWeightedPrize();
         }
@@ -405,6 +406,7 @@ function closeWinModal() {
 </body>
 
 </html>
+
 
 
 
