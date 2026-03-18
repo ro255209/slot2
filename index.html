@@ -303,7 +303,7 @@ async function startLottery() {
 
     } catch (e) {
         console.error(e);
-        alert("網路通訊異常，請確認網路連線後重試！");
+        alert("雲端資料庫通訊異常，請連絡官方小編或確認網路連線後重試！");
         document.getElementById("result").innerText = "連線超時";
         spinning = false;
         btn.disabled = false;
