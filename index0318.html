@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>媳婦店鋪二周年抽獎系統 - 雲端版</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+            color: #fff; text-align: center; padding: 20px; min-height: 100vh;
+            margin: 0; display: flex; flex-direction: column;
+        }
+        #wrapper { max-width: 420px; margin: auto; flex: 1; width: 100%; }
+        
+        #startBtn { 
+            padding: 15px 24px; margin: 8px; border: none; border-radius: 25px; 
+            cursor: pointer; font-weight: bold; width: 85%; font-size: 18px;
+            background: #34495e; color: #bdc3c7; transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        #startBtn.unlocked { background: #1abc9c; color: white; }
+        #startBtn:disabled { background: #7f8c8d !important; cursor: not-allowed; opacity: 0.6; }
+
+        .slot {
+            font-size: 32px; height: 80px; line-height: 80px;
+            background: rgba(0, 0, 0, 0.4); border-radius: 12px; margin: 20px auto;
+            border: 2px solid #1abc9c; box-shadow: 0 0 15px rgba(26, 188, 156, 0.2);
+        }
+
+        #resetBtn { background: transparent; color: rgba(255,255,255,0.2); font-size: 11px; margin-top: 30px; border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; cursor: pointer; }
+        #result { font-size: 20px; margin-top: 15px; color: #f1c40f; font-weight: bold; min-height: 1.5em; }
+        #desc { margin-top: 10px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px; font-size: 14px; line-height: 1.6; min-height: 40px; }
+
+        details { margin-top: 30px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; text-align: left; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        summary { padding: 12px 15px; cursor: pointer; color: #1abc9c; font-weight: bold; outline: none; display: flex; justify-content: space-between; align-items: center; list-style: none; }
+        summary::after { content: "🔽"; font-size: 10px; transition: 0.3s; }
+        details[open] summary::after { transform: rotate(180deg); }
+
+        .code-tag { font-size: 13px; color: #ffd; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px; font-family: monospace; }
+        #history { list-style: none; padding: 0 15px 10px 15px; font-size: 13px; margin: 0; }
+        #history li { padding: 10px 0; border-bottom: 1px dashed rgba(255,255,255,0.1); }
+        
+        #footer { margin-top: 40px; padding-bottom: 20px; color: rgba(255, 255, 255, 0.4); font-size: 12px; }
+        .divider { width: 30px; height: 1px; background: #1abc9c; margin: 15px auto; opacity: 0.5; }
+
+        #pwdModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-content { background: #2c3e50; padding: 25px; border-radius: 15px; width: 280px; border: 1px solid #1abc9c; }
+        .modal-input { width: 100%; padding: 12px; border-radius: 8px; border: none; margin: 15px 0; box-sizing: border-box; font-size: 18px; text-align: center; }
+
+        /* --- 大獎驚喜彈窗 --- */
+        #winModal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.92); z-index: 10000; justify-content: center; align-items: center;
+            flex-direction: column; text-align: center;
+        }
+        .win-content {
+            background: linear-gradient(135deg, #b8860b, #8b6508); 
+            padding: 25px 20px; border-radius: 20px; width: 88%; max-width: 340px;
+            box-shadow: 0 0 40px rgba(184, 134, 11, 0.4); animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .win-title { font-size: 24px; color: #fff; margin-bottom: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.4); font-weight: bold; }
+        .win-prize { font-size: 20px; color: #fff; font-weight: bold; margin: 10px 0; background: rgba(0,0,0,0.25); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); }
+        .win-code-box { display: inline-block; background: rgba(0, 0, 0, 0.4); color: #fff; padding: 8px 15px; border-radius: 8px; font-family: monospace; font-size: 18px; letter-spacing: 1px; border: 1px dashed rgba(255, 255, 255, 0.5); margin: 5px 0; }
+        
+        .win-qr-area { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; margin: 10px auto; width: fit-content; }
+        .win-qr-area img { display: block; background: white; border-radius: 5px; }
+
+        .close-win-btn { 
+            background: #fff; color: #8b6508; border: none; padding: 12px 40px; 
+            border-radius: 25px; font-weight: bold; font-size: 16px; cursor: pointer; 
+            margin-top: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.3s;
+        }
+        .close-win-btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; }
+    </style>
+</head>
+
+<body>
+<div id="wrapper">
+    <h2>🎰 媳婦店鋪二周年慶消費抽獎活動</h2>
+    
+    <div id="notice" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; font-size: 12px; text-align: left; border-left: 4px solid #1abc9c;">
+        <b>📢 活動說明</b><br>
+        ① 消費滿額￥10,000以上同一組團體限抽一次，金額與次數不累計<br>
+        ② 如抽中九折優待 或 租車折扣券，請手機拍照並傳送中獎畫面並加入官方LINE與小幫手領獎，優惠券限隔日後下次消費使用<br>
+        ⬇️本畫面最下方可直接掃描QR碼加入官方LINE<br>
+        ⚠️如無拍照兌換視同放棄中獎機會，確保顧客權益，本抽獎系統前後端皆會同步紀錄抽獎資料<br><br>
+        🤵店員メモ:レシート￥10,000円以上からお買い上げで，1グループ1回抽選に限ります。<br>
+        ℹ️お客様に割引クーポンが當たる🧧🚘，当選画面を撮影📸，下記ラインQRコードをスキャンして交換する。<br>
+    </div>
+
+    <div class="slot" id="slotText">請先解鎖(ロック中)</div>
+
+    <button id="startBtn" onclick="handleButtonClick()">點擊輸入密碼解鎖(暗証番号)</button>
+
+    <div id="result"></div>
+    <div id="desc"></div>
+
+    <details id="historyDetails">
+        <summary>🕒 本設備近 10 筆抽選紀錄(記録シート)</summary>
+        <ul id="history">
+            <li style="border:none; color:#aaa; text-align:center;">尚無紀錄</li>
+        </ul>
+    </details>
+    
+    <button id="resetBtn" onclick="resetHistory()">清除紀錄 (需管理密碼)</button>
+</div>
+
+<div id="pwdModal">
+    <div class="modal-content">
+        <h3 style="margin:0; color:#1abc9c;">啟動驗證</h3>
+        <p style="font-size:14px; color:#bdc3c7; margin-top:10px;">請輸入今日啟動碼(暗証番号入力)</p>
+        <input type="password" id="pwdInput" class="modal-input" placeholder="請輸入密碼">
+        <button onclick="checkPwd()" style="background:#1abc9c; color:white; border:none; padding:12px; border-radius:10px; cursor:pointer; width:100%; font-weight:bold;">驗證解鎖Check</button>
+        <button onclick="closeModal()" style="background:transparent; color:#95a5a6; border:none; margin-top:10px; cursor:pointer; font-size:12px;">取消</button>
+    </div>
+</div>
+
+<div id="winModal">
+    <div class="win-content">
+        <div class="win-title">✨恭喜中大獎✨大當り✨</div>
+        <div id="winPrizeName" class="win-prize">獎項名稱</div>
+        
+        <div style="margin: 10px 0;">
+            <span style="color: #fff; font-size: 13px; opacity: 0.9;">兌換碼：</span><br>
+            <div id="winCodeDisplay" class="win-code-box">-------</div>
+        </div>
+
+        <div id="winTimeDisplay" style="font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 10px; font-family: monospace;">
+            抽選時間：----/--/-- --:--:--
+        </div>
+        
+        <div class="win-qr-area">
+            <img src="https://qr-official.line.me/gs/M_875dbsye_GW.png" width="120" height="120" alt="LINE QR Code">
+        </div>
+        <p style="color: #ffd; font-size: 12px; font-weight: bold; margin: 5px 0;">📸 請馬上用手機拍照中獎畫面並掃碼兌換領獎<br>⚠️如未自行留存將喪失兌換資格<br>お客様に当選画面写真を撮ることを覚えてもらう</p>
+        
+        <button id="closeWinBtn" class="close-win-btn" onclick="closeWinModal()" disabled>請稍候 (10s)</button>
+    </div>
+</div>
+
+<footer id="footer">
+    <div class="qr-container">
+        <img src="https://qr-official.line.me/gs/M_875dbsye_GW.png" width="150" height="150" alt="LINE QR Code">
+        <div style="color: #1abc9c; font-weight: bold; margin-top: 10px;">📸 中獎優待券請拍照畫面後<br>掃碼加入官方賴領獎</div>
+    </div>
+    <div class="divider"></div>
+    <p>© 2024-2026 媳婦店鋪 ‧ 版權所有</p>
+    <div class="uid-tag" id="footerUid">Device ID: Loading...</div>
+    <p class="signature">Designed by <span style="color:#ffd; font-weight:bold;">月半_Cloud_V1.1_0318</span></p>
+</footer>
+
+<script>
+// --- 基礎設定 ---
+const WIN_SOUND = new Audio("https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3");
+const NORMAL_SOUND = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3");
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNlIjZXa_8dVkdzVRdRRjVKqAPQT52gcdHvOGkyZtNGhfVKCeTrBDczipZfHAVqekJlA/exec"; // ★這裡請更換為您的 GAS Web App URL
+const ADMIN_PASSWORD = "1688"; 
+
+// 預存獎項名稱 (僅供動畫跑馬燈顯示用，不代表中獎權重)
+const prizesAnimationList = [
+    "👜花園鰻帆布袋壹個", "🧧九折優惠券壹張", "🚘日之初租車優惠券壹張", 
+    "🍱精選禮盒壹盒", "⚓精選紀念小物壹個", "🍬特選糖果壹包", 
+    "🥒苦瓜脆片壹包", "🎁限定小禮物壹份"
+];
+
+let isUnlocked = false; 
+let historyData = [];
+let spinning = false;
+
+// --- 初始化 ---
+window.onload = function() {
+    const saved = localStorage.getItem("lottery_history");
+    if (saved) { historyData = JSON.parse(saved); renderHistory(); }
+    document.getElementById("footerUid").innerText = "Device ID: " + getDeviceUID();
+};
+
+// --- 防誤觸邏輯 ---
+document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) e.preventDefault();
+    lastTouchEnd = now;
+}, false);
+
+// --- 密碼與解鎖 ---
+function getDynamicPassword() {
+    const now = new Date();
+    return (now.getMonth() + 1).toString().padStart(2, '0') + now.getDate().toString().padStart(2, '0') + "777"; 
+}
+
+function handleButtonClick() {
+    if (!isUnlocked) {
+        document.getElementById("pwdModal").style.display = "flex";
+        document.getElementById("pwdInput").focus();
+        return;
+    }
+    startLottery();
+}
+
+function checkPwd() {
+    if (document.getElementById("pwdInput").value === getDynamicPassword()) {
+        isUnlocked = true;
+        const btn = document.getElementById("startBtn");
+        btn.innerText = "開始抽獎(抽選)";
+        btn.classList.add("unlocked");
+        document.getElementById("slotText").innerText = "READY";
+        closeModal();
+    } else { alert("密碼錯誤 failed"); }
+}
+
+function closeModal() { document.getElementById("pwdModal").style.display = "none"; }
+
+// --- 工具函式 ---
+function getDeviceUID() {
+    let uid = localStorage.getItem("device_uid");
+    if (!uid) {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let randomPart = "";
+        for (let i = 0; i < 6; i++) randomPart += chars[Math.floor(Math.random() * chars.length)];
+        uid = "DEV-" + new Date().getFullYear().toString().slice(-2) + randomPart;
+        localStorage.setItem("device_uid", uid);
+    }
+    return uid;
+}
+
+function generateCode() {
+    const now = new Date();
+    const dateStr = now.getFullYear().toString().slice(-2) + (now.getMonth() + 1).toString().padStart(2, '0') + now.getDate().toString().padStart(2, '0');
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let randomPart = "";
+    for (let i = 0; i < 12; i++) randomPart += chars[Math.floor(Math.random() * chars.length)];
+    return dateStr + randomPart;
+}
+
+// --- 核心抽獎流程 ---
+async function startLottery() {
+    if (spinning || !isUnlocked) return;
+    spinning = true;
+
+    // 音效預熱
+    WIN_SOUND.play().then(()=>WIN_SOUND.pause()).catch(()=>{});
+
+    const btn = document.getElementById("startBtn");
+    const slot = document.getElementById("slotText");
+    btn.disabled = true;
+    
+    document.getElementById("result").innerText = "抽獎中(抽選中)...";
+    document.getElementById("desc").innerText = "";
+
+    const code = generateCode();
+    const uid = getDeviceUID();
+
+    try {
+        // 1. 同步向後端請求中獎結果
+        const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                code: code,
+                uid: uid,
+                device: navigator.userAgent
+            })
+        });
+        
+        const resData = await response.json();
+        if (!resData.success) throw new Error("庫存更新失敗");
+
+        const winPrize = resData.prize; // 取得後端決定的獎項名稱與說明
+
+        // 2. 啟動視覺動畫 (跑馬燈)
+        const totalFrames = 40;
+        for (let i = 0; i < totalFrames; i++) {
+            slot.innerText = prizesAnimationList[Math.floor(Math.random() * prizesAnimationList.length)];
+            const delay = 40 + Math.pow(i / 5, 2.5);
+            await new Promise(r => setTimeout(r, delay)); 
+        }
+
+        // 3. 顯示最終結果
+        slot.innerText = winPrize.name;
+        document.getElementById("result").innerHTML = `🎉恭喜中獎 - ${winPrize.name}<br><span class="code-tag">兌換碼：${code}</span>`;
+        document.getElementById("desc").innerHTML = `<b>獎項說明：</b>${winPrize.desc}`;
+
+        // 4. 判斷是否彈出金色大獎視窗 (比對前三名獎項)
+        const topThree = ["👜花園鰻帆布袋壹個", "🧧九折優惠券壹張", "🚘日之初租車優惠券壹張"];
+        if (topThree.includes(winPrize.name)) {
+            WIN_SOUND.currentTime = 0;
+            WIN_SOUND.play();
+            showWinModal(winPrize.name, code);
+        } else {
+            NORMAL_SOUND.currentTime = 0;
+            NORMAL_SOUND.play();
+        }
+
+        // 5. 更新本地紀錄
+        const record = { name: winPrize.name, code: code, time: new Date().toLocaleString() };
+        historyData.unshift(record);
+        if (historyData.length > 10) historyData.length = 10;
+        localStorage.setItem("lottery_history", JSON.stringify(historyData));
+        renderHistory();
+
+    } catch (e) {
+        console.error(e);
+        alert("網路通訊異常，請確認網路連線後重試！");
+        document.getElementById("result").innerText = "連線超時";
+        spinning = false;
+        btn.disabled = false;
+        btn.innerText = "重新嘗試(再試行)";
+        return;
+    }
+
+    // 6. 冷卻倒數
+    let cd = 10;
+    const t = setInterval(() => {
+        cd--;
+        btn.innerText = cd > 0 ? `請稍候 ${cd}s` : "開始抽獎(抽選)";
+        if (cd <= 0) { clearInterval(t); btn.disabled = false; spinning = false; }
+    }, 1000);
+}
+
+// --- 視窗控制邏輯 ---
+function showWinModal(name, code) {
+    const modal = document.getElementById("winModal");
+    const closeBtn = document.getElementById("closeWinBtn");
+    const timeDisplay = document.getElementById("winTimeDisplay");
+    
+    const now = new Date();
+    const timeString = `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getDate().toString().padStart(2,'0')} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+
+    document.getElementById("winPrizeName").innerText = name;
+    document.getElementById("winCodeDisplay").innerText = code;
+    timeDisplay.innerText = `抽選時間：${timeString}`;
+    
+    modal.style.display = "flex";
+    
+    let timer = 10;
+    closeBtn.disabled = true;
+    closeBtn.innerText = `請拍照留底存證 (${timer}s)`;
+    
+    const countdown = setInterval(() => {
+        timer--;
+        if (timer > 0) {
+            closeBtn.innerText = `請拍照留底存證 (${timer}s)`;
+        } else {
+            clearInterval(countdown);
+            closeBtn.disabled = false;
+            closeBtn.innerText = "拍照後再按(返回)";
+        }
+    }, 1000);
+}
+
+function closeWinModal() {
+    document.getElementById("winModal").style.display = "none";
+    WIN_SOUND.pause();
+    WIN_SOUND.currentTime = 0;
+}
+
+function renderHistory() {
+    const ul = document.getElementById("history");
+    ul.innerHTML = historyData.length ? "" : "<li>尚無紀錄</li>";
+    historyData.forEach((h, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<small>${h.time}</small><br>${i+1}. ${h.name} <span class='code-tag'>${h.code}</span>`;
+        ul.appendChild(li);
+    });
+}
+
+function resetHistory() {
+    if (prompt("請輸入管理密碼：") === ADMIN_PASSWORD) {
+        localStorage.removeItem("lottery_history");
+        historyData = []; renderHistory();
+    }
+}
+</script>
+</body>
+</html>
