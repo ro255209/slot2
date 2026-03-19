@@ -242,48 +242,85 @@ async function startLottery() {
     spinning = true;
 
     // 音效預熱
-    WIN_SOUND.play().then(()=>WIN_SOUND.pause()).catch(()=>{});
+    WIN_SOUND.play().then(() => WIN_SOUND.pause()).catch(() => {});
 
     const btn = document.getElementById("startBtn");
     const slot = document.getElementById("slotText");
     btn.disabled = true;
-    
+
+    // 清空舊畫面資訊
     document.getElementById("result").innerText = "抽獎中(抽選中)...";
     document.getElementById("desc").innerText = "";
 
     const code = generateCode();
     const uid = getDeviceUID();
 
+    // 狀態追蹤變數
+    let isDataLoaded = false;
+    let winPrize = null;
+    let serverError = null;
+
+    // --- 1. 背景發送請求 (非同步，不阻塞動畫) ---
+    const fetchDataTask = fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            code: code,
+            uid: uid,
+            device: navigator.userAgent
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            winPrize = data.prize;
+            isDataLoaded = true;
+        } else {
+            throw new Error("庫存更新失敗");
+        }
+    })
+    .catch(e => {
+        serverError = e;
+        isDataLoaded = true; // 標記為結束，讓動畫跳出等待迴圈處理報錯
+    });
+
     try {
-        // 1. 同步向後端請求中獎結果
-        const response = await fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({
-                code: code,
-                uid: uid,
-                device: navigator.userAgent
-            })
-        });
-        
-        const resData = await response.json();
-        if (!resData.success) throw new Error("庫存更新失敗");
-
-        const winPrize = resData.prize; // 取得後端決定的獎項名稱與說明
-
-        // 2. 啟動視覺動畫 (跑馬燈)
-        const totalFrames = 40;
-        for (let i = 0; i < totalFrames; i++) {
+        // --- 2. 啟動第一階段視覺動畫 (快速滾動，掩蓋網路延遲) ---
+        const fastFrames = 35; 
+        for (let i = 0; i < fastFrames; i++) {
             slot.innerText = prizesAnimationList[Math.floor(Math.random() * prizesAnimationList.length)];
-            const delay = 40 + Math.pow(i / 5, 2.5);
+            // 動態調整速度，從極快稍稍降速
+            const delay = 40 + Math.pow(i / 6, 2); 
             await new Promise(r => setTimeout(r, delay)); 
         }
 
-        // 3. 顯示最終結果
+        // --- 3. 緩衝區：如果資料還沒回來，持續在中速滾動等待 ---
+        let waitSafetyCount = 0;
+        while (!isDataLoaded && waitSafetyCount < 50) { 
+            slot.innerText = prizesAnimationList[Math.floor(Math.random() * prizesAnimationList.length)];
+            await new Promise(r => setTimeout(r, 100)); // 每 0.1 秒檢查一次資料
+            waitSafetyCount++;
+        }
+
+        // --- 4. 錯誤檢查 ---
+        if (serverError || !winPrize) {
+            throw serverError || new Error("連線超時");
+        }
+
+        // --- 5. 最終階段：緩速定格動畫 ---
+        const slowDownFrames = 8;
+        for (let i = 0; i < slowDownFrames; i++) {
+            slot.innerText = prizesAnimationList[Math.floor(Math.random() * prizesAnimationList.length)];
+            // 逐漸增加延遲，產生明顯的停止感
+            const delay = 150 + (i * 120); 
+            await new Promise(r => setTimeout(r, delay));
+        }
+
+        // --- 6. 顯示最終結果與原本的邏輯 ---
         slot.innerText = winPrize.name;
         document.getElementById("result").innerHTML = `🎉恭喜中獎 - ${winPrize.name}<br><span class="code-tag">兌換碼：${code}</span>`;
         document.getElementById("desc").innerHTML = `<b>獎項說明：</b>${winPrize.desc}`;
 
-        // 4. 判斷是否彈出金色大獎視窗 (比對前三名獎項)
+        // 判斷彈窗 (保留原本的前三名設定)
         const topThree = ["👜花園鰻帆布袋壹個", "🧧九折優惠券壹張", "🚘日之初租車優惠券壹張"];
         if (topThree.includes(winPrize.name)) {
             WIN_SOUND.currentTime = 0;
@@ -294,7 +331,7 @@ async function startLottery() {
             NORMAL_SOUND.play();
         }
 
-        // 5. 更新本地紀錄
+        // 更新本地紀錄
         const record = { name: winPrize.name, code: code, time: new Date().toLocaleString() };
         historyData.unshift(record);
         if (historyData.length > 10) historyData.length = 10;
@@ -303,20 +340,25 @@ async function startLottery() {
 
     } catch (e) {
         console.error(e);
+        // 使用您原本要求的錯誤提示文字
         alert("❌雲端資料庫通訊異常❌⚠️請連絡官方小編或確認網路連線後重試！⚠️");
-        document.getElementById("result").innerText = "連線超時";
+        document.getElementById("result").innerText = "連線失敗";
         spinning = false;
         btn.disabled = false;
         btn.innerText = "重新嘗試(再試行)";
         return;
     }
 
-    // 6. 冷卻倒數
+    // --- 7. 冷卻倒數 ---
     let cd = 10;
     const t = setInterval(() => {
         cd--;
         btn.innerText = cd > 0 ? `請稍候 ${cd}s` : "開始抽獎(抽選)";
-        if (cd <= 0) { clearInterval(t); btn.disabled = false; spinning = false; }
+        if (cd <= 0) { 
+            clearInterval(t); 
+            btn.disabled = false; 
+            spinning = false; 
+        }
     }, 1000);
 }
 
